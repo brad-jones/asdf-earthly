@@ -30,6 +30,7 @@ jobs:
           restore-keys: ${{ runner.os }}-node-
           path: |
             ~/.npm
+            ./node_modules
       - run: ./task lint
 
   test:
