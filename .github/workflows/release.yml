@@ -43,6 +43,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2.3.4
+      - name: Cache ASDF Tools
+        uses: actions/cache@v2.1.6
+        with:
+          key: ${{ runner.os }}-asdf-${{ hashFiles('task', '.tool-versions', '.asdf/.plugin-versions') }}
+          restore-keys: ${{ runner.os }}-asdf-
+          path: |
+            ./.asdf/**/*
       - run: ./task test
 
   release:
@@ -58,4 +65,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2.3.4
+      - name: Cache ASDF Tools
+        uses: actions/cache@v2.1.6
+        with:
+          key: ${{ runner.os }}-asdf-${{ hashFiles('task', '.tool-versions', '.asdf/.plugin-versions') }}
+          restore-keys: ${{ runner.os }}-asdf-
+          path: |
+            ./.asdf/**/*
       - run: ./task release
