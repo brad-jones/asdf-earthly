@@ -22,14 +22,17 @@ tasks:
 
   lint-bootstrap-script:
     cmds:
+      - echo "linting ./task"
       - shellcheck -s bash ./task
 
   lint-asdf-plugin:
     cmds:
+      - echo "linting bin/*"
       - shellcheck -x -s bash -P lib/ bin/*
 
   lint-asdf-plugin-fmt:
     cmds:
+      - echo "checking fmt ./task ./bin ./lib ./.hooks"
       - shfmt -d ./task ./bin ./lib ./.hooks
 
   lint-commit-msg:
