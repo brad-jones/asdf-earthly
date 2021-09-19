@@ -282,7 +282,9 @@
     trap 'rm -f ${tmpFile}' EXIT
     echo -e "$(cat "${toolVersionsFile}")\n" | while read -r tool version; do
       if [ "${tool}" != "" ]; then
-        echo "ASDF_${tool^^}_VERSION=\"${version}\"" >>"${tmpFile}"
+        # Can't use ${tool^^} because of MacOS, :sigh:
+        # see: https://hybriddbablog.com/2021/01/25/bash-bad-substitution-upgrade-your-bash-version
+        echo "ASDF_${tool}_VERSION=\"${version}\"" >>"${tmpFile}"
       fi
     done
     load_dot_env "${tmpFile}"
