@@ -6,11 +6,6 @@ on:
 env:
   CI: true
   GITHUB_CONTEXT: ${{ toJson(github) }}
-  #JOB_CONTEXT: ${{ toJson(job) }}
-  #MATRIX_CONTEXT: ${{ toJson(matrix) }}
-  #RUNNER_CONTEXT: ${{ toJson(runner) }}
-  #STEPS_CONTEXT: ${{ toJson(steps) }}
-  #STRATEGY_CONTEXT: ${{ toJson(strategy) }}
 
 jobs:
   lint:
