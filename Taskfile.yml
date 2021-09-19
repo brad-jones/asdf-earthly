@@ -38,9 +38,9 @@ tasks:
     vars:
       GIT_EMPTY_SHA: "0000000000000000000000000000000000000000"
       BEFORE:
-        sh: echo $GITHUB_CONTEXT | jq -r '.github.event.push.before'
+        sh: echo $GITHUB_CONTEXT | jq -r '.event.before'
       FORCED:
-        sh: echo $GITHUB_CONTEXT | jq -r '.github.event.push.forced'
+        sh: echo $GITHUB_CONTEXT | jq -r '.event.forced'
     cmds:
       - echo "GITHUB_CONTEXT=${GITHUB_CONTEXT:-}"
       - echo "GIT_EMPTY_SHA={{.GIT_EMPTY_SHA}}"
@@ -49,7 +49,9 @@ tasks:
       - echo "GITHUB_SHA=${GITHUB_SHA:-}"
       - echo "GITHUB_EVENT_NAME=${GITHUB_EVENT_NAME:-}"
       - |
+        echo "TEST1";
         if [ "${GITHUB_EVENT_NAME:-}" == "push" ]; then
+          echo "TEST2";
           from="{{.BEFORE}}"
 
           if [ "{{.FORCED}}" == "true" ]; then
@@ -75,11 +77,11 @@ tasks:
       - commitlint-install
     vars:
       PR_TITLE:
-        sh: echo $GITHUB_CONTEXT | jq -r '.github.event.pull_request.title'
+        sh: echo $GITHUB_CONTEXT | jq -r '.event.pull_request.title'
       PR_NUMBER:
-        sh: echo $GITHUB_CONTEXT | jq -r '.github.event.pull_request.number'
+        sh: echo $GITHUB_CONTEXT | jq -r '.event.pull_request.number'
       PR_BODY:
-        sh: echo $GITHUB_CONTEXT | jq -r '.github.event.pull_request.body'
+        sh: echo $GITHUB_CONTEXT | jq -r '.event.pull_request.body'
     cmds:
       - echo "GITHUB_CONTEXT=${GITHUB_CONTEXT:-}"
       - echo "PR_TITLE={{.PR_TITLE}}"
