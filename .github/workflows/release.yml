@@ -15,6 +15,13 @@ jobs:
       - uses: actions/checkout@v2.3.4
         with:
           fetch-depth: 0
+      - name: Cache ASDF Tools
+        uses: actions/cache@v2.1.6
+        with:
+          key: ${{ runner.os }}-asdf-${{ hashFiles('task', '.tool-versions', '.asdf/.plugin-versions') }}
+          restore-keys: ${{ runner.os }}-asdf-
+          path: |
+            ./.asdf/**/*
       - run: ./task lint
 
   test:
