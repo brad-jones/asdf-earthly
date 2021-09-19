@@ -23,6 +23,13 @@ jobs:
           restore-keys: ${{ runner.os }}-asdf-
           path: |
             ./.asdf/**/*
+      - name: Cache Node Modules
+        uses: actions/cache@v2.1.6
+        with:
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: ${{ runner.os }}-node-
+          path: |
+            ~/.npm
       - run: ./task lint
 
   test:
