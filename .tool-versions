@@ -1,0 +1,5 @@
+jq 1.6
+nodejs 16.9.1
+shellcheck 0.7.2
+shfmt 3.3.0
+task 3.7.3

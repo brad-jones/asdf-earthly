@@ -1,0 +1,123 @@
+version: "3"
+
+silent: true
+dotenv: [".env"]
+output: prefixed
+run: when_changed
+
+tasks:
+  onboard:
+    cmds:
+      - git config pull.rebase true
+      - git config core.hooksPath $PWD/.hooks
+      - git config commit.template $PWD/.gitmessagetpl
+
+  lint:
+    deps:
+      - lint-bootstrap-script
+      - lint-asdf-plugin
+      - lint-asdf-plugin-fmt
+      - lint-commit-msg
+      - lint-pr-commit-msg
+
+  lint-bootstrap-script:
+    cmds:
+      - shellcheck -s bash ./task
+
+  lint-asdf-plugin:
+    cmds:
+      - shellcheck -x -s bash -P lib/ bin/*
+
+  lint-asdf-plugin-fmt:
+    cmds:
+      - shfmt -d ./task ./bin ./lib ./.hooks
+
+  lint-commit-msg:
+    deps:
+      - commitlint-install
+    vars:
+      GIT_EMPTY_SHA: "0000000000000000000000000000000000000000"
+      BEFORE:
+        sh: echo $GITHUB_CONTEXT | jq -r '.github.event.push.before'
+      FORCED:
+        sh: echo $GITHUB_CONTEXT | jq -r '.github.event.push.forced'
+    cmds:
+      - echo "GITHUB_CONTEXT=${GITHUB_CONTEXT:-}"
+      - echo "GIT_EMPTY_SHA={{.GIT_EMPTY_SHA}}"
+      - echo "BEFORE={{.BEFORE}}"
+      - echo "FORCED={{.FORCED}}"
+      - echo "GITHUB_SHA=${GITHUB_SHA:-}"
+      - echo "GITHUB_EVENT_NAME=${GITHUB_EVENT_NAME:-}"
+      - |
+        if [ "${GITHUB_EVENT_NAME:-}" == "push" ]; then
+          from="{{.BEFORE}}"
+
+          if [ "{{.FORCED}}" == "true" ]; then
+            echo "Commit was forced, checking only the latest commit from push instead of a range of commit messages."
+            echo "When a commit is forced, the "before" field from the push event may point to a commit that doesn't exist."
+            from="null"
+          fi
+
+          if [ "${from}" == "{{.GIT_EMPTY_SHA}}" ]; then
+            echo "Checking only the latest commit from push instead of a range of commit messages, as this is the very first commit."
+            from="null"
+          fi
+
+          if [ "${from}" == "null" ]; then
+            npx commitlint -V --from "${GITHUB_SHA}"
+          else
+            npx commitlint -V --from "${from}" --to "${GITHUB_SHA}"
+          fi
+        fi
+
+  lint-pr-commit-msg:
+    deps:
+      - commitlint-install
+    vars:
+      PR_TITLE:
+        sh: echo $GITHUB_CONTEXT | jq -r '.github.event.pull_request.title'
+      PR_NUMBER:
+        sh: echo $GITHUB_CONTEXT | jq -r '.github.event.pull_request.number'
+      PR_BODY:
+        sh: echo $GITHUB_CONTEXT | jq -r '.github.event.pull_request.body'
+    cmds:
+      - echo "GITHUB_CONTEXT=${GITHUB_CONTEXT:-}"
+      - echo "PR_TITLE={{.PR_TITLE}}"
+      - echo "PR_NUMBER={{.PR_NUMBER}}"
+      - echo "PR_BODY={{.PR_BODY}}"
+      - echo "GITHUB_EVENT_NAME=${GITHUB_EVENT_NAME:-}"
+      - |
+        if [ "${GITHUB_EVENT_NAME:-}" == "pull_request" ]; then
+          echo -e "{{.PR_TITLE}} (#{{.PR_NUMBER}})\n\n{{.PR_BODY}}" | npx commitlint -V
+        fi
+
+  fmt:
+    cmds:
+      - shfmt -l -w ./task ./bin ./lib ./.hooks
+
+  test:
+    cmds:
+      - echo "Hello World"
+
+  pre-commit:
+    deps:
+      - lint
+      - test
+
+  commit-msg:
+    cmds:
+      - task: commitlint
+        vars:
+          CLI_ARGS: -e -V
+
+  commitlint-install:
+    cmds:
+      - if [ ! -d "$PWD/node_modules" ]; then npm ci; fi
+
+  commitlint:
+    deps:
+      - commitlint-install
+    cmds:
+      - npx commitlint {{.CLI_ARGS}}
+
+  release: echo "Hello World"
