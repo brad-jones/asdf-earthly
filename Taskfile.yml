@@ -42,16 +42,8 @@ tasks:
       FORCED:
         sh: echo $GITHUB_CONTEXT | jq -r '.event.forced'
     cmds:
-      - echo "GITHUB_CONTEXT=${GITHUB_CONTEXT:-}"
-      - echo "GIT_EMPTY_SHA={{.GIT_EMPTY_SHA}}"
-      - echo "BEFORE={{.BEFORE}}"
-      - echo "FORCED={{.FORCED}}"
-      - echo "GITHUB_SHA=${GITHUB_SHA:-}"
-      - echo "GITHUB_EVENT_NAME=${GITHUB_EVENT_NAME:-}"
       - |
-        echo "TEST1";
         if [ "${GITHUB_EVENT_NAME:-}" == "push" ]; then
-          echo "TEST2";
           from="{{.BEFORE}}"
 
           if [ "{{.FORCED}}" == "true" ]; then
@@ -66,8 +58,12 @@ tasks:
           fi
 
           if [ "${from}" == "null" ]; then
-            npx commitlint -V --from "${GITHUB_SHA}"
+            from="${GITHUB_SHA}~1"
+            echo "FROM=${from}"
+            npx commitlint -V --from "${from}"
           else
+            echo "FROM=${from}"
+            echo "TO=${GITHUB_SHA}"
             npx commitlint -V --from "${from}" --to "${GITHUB_SHA}"
           fi
         fi
@@ -83,11 +79,6 @@ tasks:
       PR_BODY:
         sh: echo $GITHUB_CONTEXT | jq -r '.event.pull_request.body'
     cmds:
-      - echo "GITHUB_CONTEXT=${GITHUB_CONTEXT:-}"
-      - echo "PR_TITLE={{.PR_TITLE}}"
-      - echo "PR_NUMBER={{.PR_NUMBER}}"
-      - echo "PR_BODY={{.PR_BODY}}"
-      - echo "GITHUB_EVENT_NAME=${GITHUB_EVENT_NAME:-}"
       - |
         if [ "${GITHUB_EVENT_NAME:-}" == "pull_request" ]; then
           echo -e "{{.PR_TITLE}} (#{{.PR_NUMBER}})\n\n{{.PR_BODY}}" | npx commitlint -V
