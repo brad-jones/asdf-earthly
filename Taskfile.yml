@@ -147,5 +147,3 @@ tasks:
       - commitlint-install
     cmds:
       - npx commitlint {{.CLI_ARGS}}
-
-  release: echo "Hello World"
