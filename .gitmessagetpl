@@ -2,7 +2,8 @@
 #
 # TYPE
 # ======================================================================
-# Can be one of: feat, fix, chore, build, ci, docs, tests, etc...
+# Can be one of: build, chore, ci, docs, feat, fix, perf, refactor,
+#                revert, style, test
 #
 #  - a commit of the type fix patches a bug in your codebase,
 #    this correlates with PATCH in Semantic Versioning.
