@@ -92,8 +92,40 @@ tasks:
       - shfmt -l -w ./task ./bin ./lib ./.hooks
 
   test:
+    vars:
+      GIT_REPO: https://github.com/brad-jones/asdf-earthly.git
+      TOOL_VERSION: '{{default "latest" .TOOL_VERSION}}'
     cmds:
-      - echo "Hello World"
+      - |
+        if [ ! -v CI ]; then
+          echo ">>> Setting up local test env"
+          curDir="$PWD"
+          tmpDir="$(mktemp -d /tmp/asdfTest.XXXXXX)"
+          cp -r "." "${tmpDir}"
+          cd "${tmpDir}"
+          git checkout -b testing
+          git add ./bin ./lib
+          git commit -n -m "chore: push new code to allow local testing"
+          git push -u origin testing
+          echo -e ">>> Local test env created, running tests\n\n"
+        fi
+
+        set +e
+        asdf plugin test earthly "{{.GIT_REPO}}" \
+          --asdf-tool-version "{{.TOOL_VERSION}}" \
+          --asdf-plugin-gitref "${GITHUB_SHA:-testing}" \
+          earthly --version
+        status="$?"
+        set -e;
+
+        if [ ! -v CI ]; then
+          echo -e "\n\n>>> Cleanup local test env"
+          git push -d origin testing
+          cd "${curDir}"
+          rm -rf "${tmpDir}"
+        fi
+
+        exit "${status}"
 
   pre-commit:
     deps:
